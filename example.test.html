@@ -1,0 +1,33 @@
+<!--
+
+  ==== HOW TO TEST THE FORMATTER ====
+  Copy this file to test.html, then run the following command in the terminal:
+  npx prettier --plugin ./index.mjs --write test.html
+
+  If it doesn't format, then it might be because Prettier ignores files in .gitignore.
+
+-->
+
+<div x-data="{ options: {{ options|default:"[]" }}, search: '{{ initial_value }}', value: '{{ initial_value }}', filteredOptions: [], activeOptionIndex: -1, expanded: false }"
+     @click.away="expanded = false; search = value"
+     @keydown.escape="expanded = false; search = value"
+      @keydown.arrow-up.prevent="activeOptionIndex = Math.max(activeOptionIndex - 1, 0)"
+     @keydown.arrow-down.prevent="activeOptionIndex = Math.min(activeOptionIndex + 1, filteredOptions.length - 1)"
+        @keydown.enter="if (expanded) $event.preventDefault(); value = filteredOptions[activeOptionIndex] ?? filteredOptions[0] ?? value; search = value; expanded = false"
+     x-model="{{ x_model }}"
+     x-modelable="search"
+     >
+  {% if label %}
+    <label for="combobox">{{ label }}</label>
+  {% endif %}
+  <div class="relative">
+    <input id="combobox"
+           type="text"
+           role="combobox"
+           aria-controls="options"
+           ria-expanded="false"
+           x-model="search"
+           required
+           @input="expanded = search.length > 0; filteredOptions = options.filter(option => option.toLowerCase().includes(search.toLowerCase())).slice(0, 5); activeOptionIndex = filteredOptions.findIndex(option => option === search)">
+  </div>
+</div>
