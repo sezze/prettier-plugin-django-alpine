@@ -31,9 +31,3 @@ Or use it directly:
 ```bash
 prettier --write --plugin=prettier-plugin-django-alpine "**/*.html"
 ```
-
-## Known issues
-
-Currently I could not find a way to get the HTML tag indentation level after formatting, so if your tag is improperly indented and your Alpine.js directive is a multi-line directive, then you will need to run the formatter twice to get the correct indentation.
-
-TLDR: If you get the wrong indentation, try running the formatting again.
