@@ -1,3 +1,21 @@
+const autoSelfClosingTags = [
+  "area",
+  "base",
+  "br",
+  "col",
+  "embed",
+  "hr",
+  "img",
+  "input",
+  "keygen",
+  "link",
+  "meta",
+  "param",
+  "source",
+  "track",
+  "wbr",
+];
+
 export function replaceDjangoTags(text) {
   const djangoTags = {};
   let index = 0;
@@ -47,15 +65,17 @@ export function replaceDjangoTags(text) {
         // Match HTML tags
         else if (char === "<") {
           const isClosing = nextChar === "/";
+          // use regex to find the tag name
+          const tagName = text.match(/<\s*\/?\s*(\w+)/)?.[1].toLowerCase();
           stateStack.push({
             mode: "htmlTag",
             data: {
               isClosing,
+              isAutoSelfClosing: autoSelfClosingTags.includes(tagName),
             },
             start: i,
           });
-          currentNesting = isClosing ? currentNesting - 1 : currentNesting + 1;
-          nesting[nesting.length - 1] = currentNesting;
+          if (!isClosing) nesting[nesting.length - 1] = ++currentNesting;
         }
         break;
       case "djangoTag":
@@ -103,6 +123,14 @@ export function replaceDjangoTags(text) {
 
         // Match closing of the tag
         else if (char === ">") {
+          // If it was self closing or closing, then we need to go back a nesting level
+          if (
+            state.data.isAutoSelfClosing ||
+            state.data.isClosing ||
+            prevChar === "/"
+          ) {
+            currentNesting--;
+          }
           stateStack.pop();
         }
         break;
