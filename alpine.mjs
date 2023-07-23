@@ -71,7 +71,7 @@ async function formatAlpineAttributeValue(
   // Allow short values to be on one line, first, test if there's any new lines that are inside of template strings
   if (!/`[^`]*\n[^`]*`/.test(f) && f.includes("\n")) {
     const oneLineVersion = f.replace(/\n/g, " ");
-    const finalWidth = oneLineVersion.length + col;
+    const finalWidth = oneLineVersion.length + col * options.tabWidth;
     if (finalWidth <= options.printWidth && oneLineVersion.length < 60) {
       f = oneLineVersion;
     }
@@ -90,13 +90,9 @@ async function formatAlpineAttributeValue(
   }
 
   // Indent to match the attribute position
-  const indentation = createIndentation(col + 1, options);
+  const indentation = "\t".repeat(col);
 
   f = f.replace(/\n/g, `\n${indentation}`);
 
   return f;
-}
-
-function createIndentation(col, options) {
-  return "\t".repeat(Math.ceil(col / options.tabWidth));
 }

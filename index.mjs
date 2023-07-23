@@ -1,8 +1,6 @@
 import htmlParserPlugin from "prettier/plugins/html";
 import { formatAlpineAttribute, isAlpineAttribute } from "./alpine.mjs";
-
-const djangoTagRegex =
-  /{{([^}"']*("[^"]*")*('[^']*')*)+}}|{%([^}"']*("[^"]*")*('[^']*')*)+%}/g;
+import { replaceDjangoTags } from "./django.mjs";
 
 const htmlParser = htmlParserPlugin.parsers.html;
 const htmlPrinter = htmlParserPlugin.printers.html;
@@ -13,18 +11,13 @@ export const parsers = {
     ...htmlParser,
     preprocess(text, options) {
       // Remove django template tags with placeholders
-      const djangoTags = {};
-      let index = 0;
-      text = text.replace(djangoTagRegex, (match) => {
-        const key = `__DJANGO_TAG_${index++}__`;
-        djangoTags[key] = match;
-        return key;
-      });
+      const { djangoTags, newString, nesting } = replaceDjangoTags(text);
 
       // Store them for later
       options.djangoTags = djangoTags;
+      options.nesting = nesting;
 
-      return text;
+      return newString;
     },
   },
 };
@@ -47,7 +40,7 @@ export const printers = {
                   attr.name,
                   attr.value,
                   options,
-                  node.startSourceSpan.start.col
+                  options.nesting[attr.valueSpan.start.line]
                 );
               }
             }
@@ -68,9 +61,8 @@ export const printers = {
       const djangoTags = options.djangoTags;
 
       // Reinsert django tags
-      Object.keys(djangoTags).forEach((key) => {
-        const tag = djangoTags[key];
-        stringified = stringified.replace(key, formatDjangoTag(tag));
+      Object.values(djangoTags).forEach((tag) => {
+        stringified = stringified.replace(tag.key, formatDjangoTag(tag.tag));
       });
 
       doc = JSON.parse(stringified);
