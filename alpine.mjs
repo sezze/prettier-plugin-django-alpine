@@ -1,7 +1,7 @@
 import prettier from "prettier";
 
 const alpineExpressionAttributeMatch =
-  /:[\w\d-]+|x-(data|show|bind|text|html|model|modelable|if|id)([.\w\d\-:])*/;
+  /^:[\w\d-]+|x-(data|show|bind|text|html|model|modelable|if|id)([.\w\d\-:])*/;
 const alpineNonExpressionAttributeMatch =
   /@[\w\d-]+|x-(init|on|effect)([.\w\d\-:])*/;
 
@@ -46,12 +46,19 @@ async function formatAlpineAttributeValue(
   col
 ) {
   const valueToFormat = isValueExpression ? `() => (${value})` : value;
-  let f = await prettier.format(valueToFormat, {
-    ...options,
-    parser: "typescript",
-    singleQuote: true,
-    __embeddedInHtml: true,
-  });
+
+  let f = "";
+  try {
+    f = await prettier.format(valueToFormat, {
+      ...options,
+      parser: "typescript",
+      singleQuote: true,
+      __embeddedInHtml: true,
+    });
+  } catch (error) {
+    console.warn("Error formatting alpine attribute value", error);
+    f = valueToFormat;
+  }
 
   // trim spaces
   f = f.trim();
@@ -93,6 +100,9 @@ async function formatAlpineAttributeValue(
   const indentation = "\t".repeat(col);
 
   f = f.replace(/\n/g, `\n${indentation}`);
+
+  // Remove trailing tabs
+  f = f.replace(/\t+\n/g, "\n");
 
   return f;
 }
