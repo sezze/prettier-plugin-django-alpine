@@ -56,7 +56,7 @@ async function formatAlpineAttributeValue(
       __embeddedInHtml: true,
     });
   } catch (error) {
-    console.warn("Error formatting alpine attribute value", error);
+    console.debug("Error formatting alpine attribute value", error);
     f = valueToFormat;
   }
 
