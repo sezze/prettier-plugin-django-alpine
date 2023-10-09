@@ -63,7 +63,7 @@ export function replaceDjangoTags(text) {
           pushDjangoTagState("comment");
         }
         // Match HTML tags
-        else if (char === "<") {
+        else if (char === "<" && nextChar !== "!" && nextChar !== "?") {
           const isClosing = nextChar === "/";
           // use regex to find the tag name
           const tagName = text.match(/<\s*\/?\s*(\w+)/)?.[1].toLowerCase();

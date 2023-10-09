@@ -55,54 +55,53 @@ async function formatAlpineAttributeValue(
       singleQuote: true,
       __embeddedInHtml: true,
     });
-  } catch (error) {
-    console.debug("Error formatting alpine attribute value", error);
-    f = valueToFormat;
-  }
 
-  // trim spaces
-  f = f.trim();
-
-  if (isValueExpression) {
-    // Remove the () => from the formatted value using regex (ignore whitespace)
-    f = f.replace(/\s*\(\s*\)\s*=>\s*/, "");
-    // IF there's a ( at the start and a ) at the end, remove them
+    // trim spaces
     f = f.trim();
-    if (f.startsWith("(") && f.endsWith(")")) {
-      f = f.slice(1, -1);
-    } else if (f.startsWith("(") && f.endsWith(");")) {
-      f = f.slice(1, -2);
+
+    if (isValueExpression) {
+      // Remove the () => from the formatted value using regex (ignore whitespace)
+      f = f.replace(/\s*\(\s*\)\s*=>\s*/, "");
+      // IF there's a ( at the start and a ) at the end, remove them
+      f = f.trim();
+      if (f.startsWith("(") && f.endsWith(")")) {
+        f = f.slice(1, -1);
+      } else if (f.startsWith("(") && f.endsWith(");")) {
+        f = f.slice(1, -2);
+      }
     }
-  }
 
-  // Allow short values to be on one line, first, test if there's any new lines that are inside of template strings
-  if (!/`[^`]*\n[^`]*`/.test(f) && f.includes("\n")) {
-    const oneLineVersion = f.replace(/\n/g, " ");
-    const finalWidth = oneLineVersion.length + col * options.tabWidth;
-    if (finalWidth <= options.printWidth && oneLineVersion.length < 60) {
-      f = oneLineVersion;
+    // Allow short values to be on one line, first, test if there's any new lines that are inside of template strings
+    if (!/`[^`]*\n[^`]*`/.test(f) && f.includes("\n")) {
+      const oneLineVersion = f.replace(/\n/g, " ");
+      const finalWidth = oneLineVersion.length + col * options.tabWidth;
+      if (finalWidth <= options.printWidth && oneLineVersion.length < 60) {
+        f = oneLineVersion;
+      }
     }
-  }
 
-  // If any new line isn't followed by whitespace, indent it and put on new lines
-  if (/\n[^\s{}]/.test(f)) {
-    // indent first
-    f = f.replace(/\n/g, "\n\t");
-    f = `\n\t${f}\n`;
-  } else {
-    // remove any potential final semicolon
-    if (f.endsWith(";")) {
-      f = f.slice(0, -1);
+    // If any new line isn't followed by whitespace, indent it and put on new lines
+    if (/\n[^\s{}]/.test(f)) {
+      // indent first
+      f = f.replace(/\n/g, "\n\t");
+      f = `\n\t${f}\n`;
+    } else {
+      // remove any potential final semicolon
+      if (f.endsWith(";")) {
+        f = f.slice(0, -1);
+      }
     }
+
+    // Indent to match the attribute position
+    const indentation = "\t".repeat(col);
+
+    f = f.replace(/\n/g, `\n${indentation}`);
+
+    // Remove trailing tabs
+    f = f.replace(/\t+\n/g, "\n");
+  } catch (error) {
+    f = value;
   }
-
-  // Indent to match the attribute position
-  const indentation = "\t".repeat(col);
-
-  f = f.replace(/\n/g, `\n${indentation}`);
-
-  // Remove trailing tabs
-  f = f.replace(/\t+\n/g, "\n");
 
   return f;
 }

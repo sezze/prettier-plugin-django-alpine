@@ -1,6 +1,6 @@
 {
   "name": "prettier-plugin-django-alpine",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Format Django tags and Alpine.js in HTML files",
   "main": "index.mjs",
   "scripts": {
