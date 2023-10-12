@@ -58,12 +58,20 @@ export const printers = {
     print(path, options, print) {
       let doc = htmlPrinter.print(path, options, print);
 
+      // format all django tags
+      const djangoTags =
+        options.djangoTags && Object.values(options.djangoTags);
+      djangoTags?.forEach((tag) => {
+        tag.tag = formatDjangoTag(tag.tag);
+      });
+
       const memory = new Set();
 
       const traverse = (node) => {
         if (typeof node === "string") {
+          if (node.indexOf("__DJANGO_TAG_") === -1) return node;
           // Reinsert django tags
-          Object.values(options.djangoTags).forEach((tag) => {
+          djangoTags?.forEach((tag) => {
             node = node.replace(tag.key, formatDjangoTag(tag.tag));
           });
           return node;
