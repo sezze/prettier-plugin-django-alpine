@@ -57,30 +57,28 @@ export const printers = {
     },
     print(path, options, print) {
       let doc = htmlPrinter.print(path, options, print);
-      // let stringified = JSON.stringify(doc);
-      // const djangoTags = options.djangoTags;
 
-      // // Reinsert django tags
-      // Object.values(djangoTags).forEach((tag) => {
-      //   stringified = stringified.replace(tag.key, formatDjangoTag(tag.tag));
-      // });
+      const memory = new Set();
 
-      // doc = JSON.parse(stringified);
-
-      // Actually parse the tree instead. If it's a string, run the code above, otherwise log it
       const traverse = (node) => {
         if (typeof node === "string") {
           // Reinsert django tags
           Object.values(options.djangoTags).forEach((tag) => {
-            console.log(formatDjangoTag(tag.tag));
             node = node.replace(tag.key, formatDjangoTag(tag.tag));
           });
-        } else if (node.contents) {
+          return node;
+        }
+        if (memory.has(node)) return node;
+        memory.add(node);
+
+        if (node.contents) {
           node.contents = traverse(node.contents);
         } else if (node.parts) {
           node.parts = traverse(node.parts);
         } else if (Array.isArray(node)) {
-          node = node.map(traverse);
+          for (let i = 0; i < node.length; i++) {
+            node[i] = traverse(node[i]);
+          }
         }
 
         return node;
